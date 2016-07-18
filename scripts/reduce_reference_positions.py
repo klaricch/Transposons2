@@ -2,7 +2,7 @@
 import re
 
 
-infile="NA_counts_at_positions_AF.txt"
+infile="NA_counts_at_positions.txt"
 
 keeps={}
 with open(infile, 'r') as IN:
@@ -13,8 +13,8 @@ with open(infile, 'r') as IN:
 		if float(frac) <.10:
 			keeps[position]=frac
 
-OUT=open("kin_matrix_AF_reduced.txt", 'w')
-org="kin_matrix_AF.txt"
+OUT=open("kin_matrix_ins_reduced.txt", 'w')
+org="kin_matrix_ins.txt"
 
 with open(org, 'r') as IN:
 	header=next(IN)

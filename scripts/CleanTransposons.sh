@@ -26,8 +26,11 @@ kin_AF=kin_hash_AF.py
 frac_matrix_ins=te_totals_frac_ins.py
 frac_matrix_AF=te_totals_frac_AF.py
 NA_pos=NA_per_ins.py
+NA_pos_ref=NA_per_ref.py
+reduce_ref=reduce_reference_positions.py
 reduce_ins=reduce_insertion_positions.py
 frac_matrix_ins_reduced=te_totals_frac_ins_reduced.py
+frac_matrix_AF_reduced=te_totals_frac_AF_reduced.py
 activity=activity_calculator.py
 CtCp=generate_CtCp.py
 gene_interrupt=GENE.sh
@@ -95,76 +98,83 @@ mv TE_matrix/kin_matrix_ins.txt .
 python ${scripts_dir}/${kin_AF} $samples
 #remove monomorphic reference calls (all strains have that transposon(or an NA))
 cp kin_matrix_AF.txt with_monomorphic_calls_kin_matrix_AF.txt
-cat kin_matrix_AF.txt | awk '$0~/\t0\t/||$0~/trait/ {print $0}' >tmp && mv tmp kin_matrix_AF.txt
+cat kin_matrix_AF.txt | awk -v OFS="\t" '$0~/\t0\t/||$0~/trait/ {print $0}' >tmp && mv tmp kin_matrix_AF.txt #ensure 0s are present
+cat kin_matrix_AF.txt | awk -v OFS="\t" '$0~/\t1\t/||$0~/trait/ {print $0}' >tmp && mv tmp kin_matrix_AF.txt #ensure 1s are present
 # make sure column names between the matrices match
 result=`diff <(head -n 1 kin_matrix_ins.txt) <(head -n 1 kin_matrix_AF.txt)`
 if [$result eq '']
 	then echo "matched"
 	else echo "column names do not match, exiting..." && exit 1
 fi
-# merge kinship matrices:
-cat kin_matrix_ins.txt > tmp && cat kin_matrix_AF.txt |sed 1d >>tmp && mv tmp kin_matrix_full.txt
-#transpose individual matrices:
-bash ${scripts_dir}/transpose_matrix.sh kin_matrix_ins.txt  T_kin_matrix_ins.txt 
-bash ${scripts_dir}/transpose_matrix.sh kin_matrix_AF.txt  T_kin_matrix_AF.txt 
-#calculate percentage of NAs at each insertion position
-python ${scripts_dir}/${NA_pos}
-#reduce positions for mappings (remove sites with a high amount of missing data)
-python ${scripts_dir}/${reduce_ins}
-bash ${scripts_dir}/transpose_matrix.sh kin_matrix_ins_reduced.txt  T_kin_matrix_ins_reduced.txt 
-# make sure column names between the matrices match
-result=`diff <(head -n 1 kin_matrix_ins_reduced.txt) <(head -n 1 kin_matrix_AF.txt)`
+
+result=`diff <(head -n 1 kin_matrix_ins.txt) <(head -n 1 with_monomorphic_calls_kin_matrix_AF.txt)`
 if [$result eq '']
 	then echo "matched"
 	else echo "column names do not match, exiting..." && exit 1
 fi
 # merge kinship matrices:
-cat kin_matrix_ins_reduced.txt > tmp && cat kin_matrix_AF.txt |sed 1d >>tmp && mv tmp kin_matrix_full_reduced.txt
+cat kin_matrix_ins.txt > tmp && cat kin_matrix_AF.txt |sed 1d >>tmp && mv tmp kin_matrix_full.txt
+cat kin_matrix_ins.txt > tmp && cat with_monomorphic_calls_kin_matrix_AF.txt |sed 1d >>tmp && mv tmp with_monomorphic_kin_matrix_full.txt
+#transpose individual matrices:
+bash ${scripts_dir}/transpose_matrix.sh kin_matrix_ins.txt  T_kin_matrix_ins.txt 
+bash ${scripts_dir}/transpose_matrix.sh kin_matrix_AF.txt  T_kin_matrix_AF.txt 
 
 
+#calculate percentage of NAs at each insertion position
+python ${scripts_dir}/${NA_pos}
+#calculate percentage of NAs at each reference position
+python ${scripts_dir}/${NA_pos_ref}
+#reduce positions for mappings (remove sites with a high amount of missing data)
+python ${scripts_dir}/${reduce_ins}
+#reduce positions for mappings (remove sites with a high amount of missing data)
+python ${scripts_dir}/${reduce_ref}
 
+bash ${scripts_dir}/transpose_matrix.sh kin_matrix_ins_reduced.txt  T_kin_matrix_ins_reduced.txt 
+bash ${scripts_dir}/transpose_matrix.sh kin_matrix_AF_reduced.txt  T_kin_matrix_AF_reduced.txt
+# make sure column names between the matrices match
+result=`diff <(head -n 1 kin_matrix_ins_reduced.txt) <(head -n 1 kin_matrix_AF_reduced.txt)`
+if [$result eq '']
+	then echo "matched"
+	else echo "column names do not match, exiting..." && exit 1
+fi
+# merge kinship matrices:
+cat kin_matrix_ins_reduced.txt > tmp && cat kin_matrix_AF_reduced.txt |sed 1d >>tmp && mv tmp kin_matrix_full_reduced.txt
+
+
+###HERE
 #calculate fraction totals
 python ${scripts_dir}/${frac_matrix_ins} T_kin_matrix_ins.txt
 python ${scripts_dir}/${frac_matrix_AF} T_kin_matrix_AF.txt
 python ${scripts_dir}/${frac_matrix_ins_reduced} T_kin_matrix_ins_reduced.txt
+python ${scripts_dir}/${frac_matrix_AF_reduced} T_kin_matrix_AF_reduced.txt
+
+
 #transpose matrices
-bash ${scripts_dir}/transpose_matrix.sh kin_frac_matrix_ins.txt T_kin_frac_matrix_ins.txt
-bash ${scripts_dir}/transpose_matrix.sh kin_frac_matrix_AF.txt T_kin_frac_matrix_AF.txt
 bash ${scripts_dir}/transpose_matrix.sh kin_C_matrix_ins.txt T_kin_C_matrix_ins.txt
 bash ${scripts_dir}/transpose_matrix.sh kin_C_matrix_AF.txt T_kin_C_matrix_AF.txt
 bash ${scripts_dir}/transpose_matrix.sh kin_C_matrix_NAs.txt T_kin_C_matrix_NAs.txt
 #transpose reduced matrices
-bash ${scripts_dir}/transpose_matrix.sh kin_frac_matrix_ins_reduced.txt T_kin_frac_matrix_ins_reduced.txt
 bash ${scripts_dir}/transpose_matrix.sh kin_C_matrix_ins_reduced.txt T_kin_C_matrix_ins_reduced.txt
 bash ${scripts_dir}/transpose_matrix.sh kin_C_matrix_NAs_reduced.txt T_kin_C_matrix_NAs_reduced.txt
+bash ${scripts_dir}/transpose_matrix.sh kin_C_matrix_AF_reduced.txt T_kin_C_matrix_AF_reduced.txt
+bash ${scripts_dir}/transpose_matrix.sh kin_C_matrix_NAs_AF_reduced.txt T_kin_C_matrix_NAs_AF_reduced.txt
 
 # make sure column names between the matrices match
-result=`diff <(head -n 1 T_kin_frac_matrix_ins.txt) <(head -n 1 T_kin_frac_matrix_AF.txt)`
-if [$result eq '']
-	then echo "matched"
-	else echo "column names do not match, exiting..." && exit 1
-fi
-
-# make sure column names between the matrices match
-result=`diff <(head -n 1 T_kin_frac_matrix_ins_reduced.txt) <(head -n 1 T_kin_frac_matrix_AF.txt)` #AF matrix doesn't need to be reduced
+result=`diff <(head -n 1 T_kin_C_matrix_ins_reduced.txt) <(head -n 1 T_kin_C_matrix_AF_reduced.txt)` #AF matrix doesn't need to be reduced
 if [$result eq '']
 	then echo "matched"
 	else echo "column names do not match, exiting..." && exit 1
 fi
 #merge matrices
-cat T_kin_frac_matrix_ins.txt > tmp && cat T_kin_frac_matrix_AF.txt |sed 1d >>tmp && mv tmp T_kin_frac_matrix_full.txt
 cat T_kin_C_matrix_ins.txt > tmp && cat T_kin_C_matrix_AF.txt |sed 1d >>tmp && mv tmp T_kin_C_matrix_full.txt
-#merge reduced insertion matrix with original AF matrix
-cat T_kin_frac_matrix_ins_reduced.txt > tmp && cat T_kin_frac_matrix_AF.txt |sed 1d >>tmp && mv tmp T_kin_frac_matrix_full_reduced.txt
-cat T_kin_C_matrix_ins_reduced.txt > tmp && cat T_kin_C_matrix_AF.txt |sed 1d >>tmp && mv tmp T_kin_C_matrix_full_reduced.txt
+#merge reduced insertion matrix with reduced AF matrix
+cat T_kin_C_matrix_ins_reduced.txt > tmp && cat T_kin_C_matrix_AF_reduced.txt |sed 1d >>tmp && mv tmp T_kin_C_matrix_full_reduced.txt
 # remove lines with all NA (no instance of that transposition event in any of the samples)
 mv T_kin_frac_matrix_full.txt original_T_kin_frac_matrix_full.txt
 cat original_T_kin_frac_matrix_full.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > T_kin_frac_matrix_full.txt
 mv T_kin_C_matrix_full.txt original_T_kin_C_matrix_full.txt
 cat original_T_kin_C_matrix_full.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > T_kin_C_matrix_full.txt
 # remove lines with all NA  for reduced files
-mv T_kin_frac_matrix_full_reduced.txt original_T_kin_frac_matrix_full_reduced.txt
-cat original_T_kin_frac_matrix_full_reduced.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > T_kin_frac_matrix_full_reduced.txt
 mv T_kin_C_matrix_full_reduced.txt original_T_kin_C_matrix_full_reduced.txt
 cat original_T_kin_C_matrix_full_reduced.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > T_kin_C_matrix_full_reduced.txt
 #transpose and calculate activity measurements
@@ -190,10 +200,22 @@ fi
 cat T_coverage.txt |sed '1d' >tmp
 cat T_kin_C_matrix_full.txt tmp > all && mv all T_kin_C_matrix_full.txt
 cat T_kin_C_matrix_full_reduced.txt tmp > all && mv all T_kin_C_matrix_full_reduced.txt
+
+
+result=`diff <(head -n 1 T_kin_C_matrix_NAs_reduced.txt) <(head -n 1 T_kin_C_matrix_NAs_AF_reduced.txt)`
+if [$result eq '']
+	then echo "matched"
+	else echo "column names do not match, exiting..." && exit 1
+fi
+
+#merge matrices
+cat T_kin_C_matrix_NAs_reduced.txt > tmp && cat T_kin_C_matrix_NAs_AF_reduced.txt |sed 1d >>tmp && mv tmp T_kin_C_matrix_NAs_all_reduced.txt
+
+
 # copy files to final folder
 cd ${results_dir}
 mkdir final_results
-cp ${results_dir}/kinship/T_Full_Results_Activity.txt ${results_dir}/kinship/T_kin_frac_matrix_full.txt ${results_dir}/kinship/T_kin_C_matrix_full.txt ${results_dir}/kinship/kin_matrix_full.txt ${results_dir}/kinship/kin_matrix_full_reduced.txt ${results_dir}/kinship/T_kin_C_matrix_full_reduced.txt final_results
+cp ${results_dir}/kinship/T_Full_Results_Activity.txt ${results_dir}/kinship/T_kin_frac_matrix_full.txt ${results_dir}/kinship/T_kin_C_matrix_full.txt ${results_dir}/kinship/kin_matrix_full.txt ${results_dir}/kinship/kin_matrix_full_reduced.txt ${results_dir}/kinship/T_kin_C_matrix_full_reduced.txt ${results_dir}/kinship/with_monomorphic_kin_matrix_full.txt final_results
 mv CtCp_all_nonredundant.txt CtCp_redundant.txt # rename this file to avoid confustion
 #generate CtCp file with assigned TE classes for both unreduced and reduced datasets
 cd final_results
@@ -207,12 +229,13 @@ rm all_nonredundant_reduced.txt
 cat T_Full_Results_Activity.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp T_Full_Results_Activity.txt 
 cat kin_matrix_full.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp kin_matrix_full.txt
 cat kin_matrix_full_reduced.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp kin_matrix_full_reduced.txt
+cat with_monomorphic_kin_matrix_full.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp with_monomorphic_kin_matrix_full.txt
 #clip CtCp files to remove redundancies
-cat CtCp_all_nonredundant.txt |sort -k1,1 -k2,2n -k3,3 -k4,4 -k6,6|awk '!x[$1,$2,$3,$4,$6]++' > CtCp_clipped.txt #LEFT OFF HERE
+cat CtCp_all_nonredundant.txt |sort -k1,1 -k2,2n -k3,3 -k4,4 -k6,6|awk '!x[$1,$2,$3,$4,$6]++' > CtCp_clipped.txt 
 cat CtCp_clipped.txt| sort -k1,1 -k2,2n > tmp && mv tmp CtCp_clipped.txt
 cat CtCp_clipped.txt |awk '{print $1"\tTE\t"$4"\t"$2+1"\t"$3+1"\t"$6"\t"$5"\tNA\t"$8}' > CtCp_clipped.gff 
 #clip CtCp files to remove redundancies
-cat CtCp_all_nonredundant_reduced.txt |sort -k1,1 -k2,2n -k3,3 -k4,4 -k6,6|awk '!x[$1,$2,$3,$4,$6]++' > CtCp_clipped_reduced.txt #LEFT OFF HERE
+cat CtCp_all_nonredundant_reduced.txt |sort -k1,1 -k2,2n -k3,3 -k4,4 -k6,6|awk '!x[$1,$2,$3,$4,$6]++' > CtCp_clipped_reduced.txt 
 cat CtCp_clipped_reduced.txt| sort -k1,1 -k2,2n > tmp && mv tmp CtCp_clipped_reduced.txt
 cat CtCp_clipped_reduced.txt |awk '{print $1"\tTE\t"$4"\t"$2+1"\t"$3+1"\t"$6"\t"$5"\tNA\t"$8}' > CtCp_clipped_reduced.gff 
 #determine genomic features that TEs are located in 
@@ -252,10 +275,10 @@ cd ${results_dir}/final_results
 cp T_kin_C_matrix_full_reduced.txt T_kin_C_matrix_full_reduced_unpruned.txt
 python ${scripts_dir}/NA_prune.py 
 cp pruned_data.txt T_kin_C_matrix_full_reduced.txt
-
 # check which TE families predominate the total insertion count
 python ${scripts_dir}/count_predominate_insTE.py > predominate_insertions.txt
 python ${scripts_dir}/check_nums.py $repbase_fasta $consensus_renamed CtCp_all_nonredundant.txt
+
 
 
 #simplify names (WBTransposon->WBT, remove trailing _CE)
@@ -270,6 +293,15 @@ cat T_kin_C_matrix_full_reduced.txt |sed 's/WBTransposon/WBT/'|sed 's/_CE_C/_C/'
 
 cat CtCp_all_nonredundant.txt |sed 's/WBTransposon/WBT/'|sed 's/_CE_/_/' > tmp && mv tmp CtCp_all_nonredundant.txt
 cat CtCp_all_nonredundant_reduced.txt |sed 's/WBTransposon/WBT/'|sed 's/_CE_/_/' > tmp && mv tmp CtCp_all_nonredundant_reduced.txt
+
+#calculate cumulative totals
+python ${scripts_dir}/overall_te.py  T_kin_C_matrix_full_reduced.txt
+result=`diff <(head -n 1 T_kin_C_matrix_full_reduced.txt) <(head -n 1 per_strain_NAs_removed.txt )`
+if [$result eq '']
+	then echo "matched"
+	else echo "column names do not match, exiting..." && exit 1
+fi
+cat T_kin_C_matrix_full_reduced.txt > tmp && cat per_strain_NAs_removed.txt |sed 2d >>tmp && mv tmp T_kin_C_matrix_full_reduced.txt
 
 
 #assign id numbers to traits

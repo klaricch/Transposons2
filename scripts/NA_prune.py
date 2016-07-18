@@ -3,7 +3,7 @@ import re
 import sys
 from collections import defaultdict
 
-infile="/lscr2/andersenlab/kml436/git_repos2/Transposons2/results/kinship/T_kin_C_matrix_NAs_reduced.txt"
+infile="/lscr2/andersenlab/kml436/git_repos2/Transposons2/results/kinship/T_kin_C_matrix_NAs_all_reduced.txt"
 results_file="/lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/T_kin_C_matrix_full_reduced.txt"
 OUT=open("pruned_data.txt",'w')
 
@@ -58,10 +58,7 @@ with open(results_file, 'r') as IN:
 
 				OUT.write('\t' + strain_value)
 			OUT.write('\n')
-		elif re.search("total", trait_name) or \
-		re.search("absent",trait_name) or \
-		re.search("reference", trait_name) or \
-		re.search("coverage",trait_name):
+		elif re.search("total", trait_name) or re.search("coverage",trait_name):
 			pass
 			OUT.write(line + '\n')
 		else:
