@@ -226,10 +226,10 @@ python ${scripts_dir}/${assign_cut_copy_R2} $repbase_fasta $consensus_renamed al
 rm all_nonredundant.txt
 rm all_nonredundant_reduced.txt
 
-cat T_Full_Results_Activity.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp T_Full_Results_Activity.txt 
-cat kin_matrix_full.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp kin_matrix_full.txt
-cat kin_matrix_full_reduced.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp kin_matrix_full_reduced.txt
-cat with_monomorphic_kin_matrix_full.txt | awk '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp with_monomorphic_kin_matrix_full.txt
+cat T_Full_Results_Activity.txt | awk -v OFS="\t" '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp T_Full_Results_Activity.txt 
+cat kin_matrix_full.txt | awk -v OFS="\t" '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp kin_matrix_full.txt
+cat kin_matrix_full_reduced.txt | awk -v OFS="\t" '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp kin_matrix_full_reduced.txt
+cat with_monomorphic_kin_matrix_full.txt | awk -v OFS="\t" '{for (i=2;i<=NF;i++) {if($i !="NA"){print $0;break}}}' > tmp && mv tmp with_monomorphic_kin_matrix_full.txt
 #clip CtCp files to remove redundancies
 cat CtCp_all_nonredundant.txt |sort -k1,1 -k2,2n -k3,3 -k4,4 -k6,6|awk '!x[$1,$2,$3,$4,$6]++' > CtCp_clipped.txt 
 cat CtCp_clipped.txt| sort -k1,1 -k2,2n > tmp && mv tmp CtCp_clipped.txt
@@ -283,7 +283,7 @@ python ${scripts_dir}/check_nums.py $repbase_fasta $consensus_renamed CtCp_all_n
 
 #simplify names (WBTransposon->WBT, remove trailing _CE)
 #cat kin_matrix_full.txt | awk  '{if($1~/non-reference/){gsub("non-reference.*","NR",$1);gsub("_CE_NR$","_NR",$1)}else{$1=$1"_R";gsub("_CE_R$","_R",$1)}; print $0;}' |sed 's/WBTransposon/WBT/' > tmp && mv tmp kin_matrix_full.txt 
-cat kin_matrix_full.txt  | awk  '{if($1~/non-reference/){gsub("non-reference.*","NR",$1);gsub("_CE_NR$","_NR",$1)}else{if($1!~/trait/){$1=$1"_R";gsub("_CE_R$","_R",$1)}}; print $0;}' |sed 's/WBTransposon/WBT/' > tmp && mv tmp kin_matrix_full.txt 
+cat kin_matrix_full.txt  | awk  -v OFS="\t" '{if($1~/non-reference/){gsub("non-reference.*","NR",$1);gsub("_CE_NR$","_NR",$1)}else{if($1!~/trait/){$1=$1"_R";gsub("_CE_R$","_R",$1)}}; print $0;}' |sed 's/WBTransposon/WBT/' > tmp && mv tmp kin_matrix_full.txt 
 cat T_kin_C_matrix_full.txt |sed 's/WBTransposon/WBT/'|sed 's/_CE_C/_C/' >tmp && mv tmp T_kin_C_matrix_full.txt
 cat T_kin_C_matrix_full_reduced.txt |sed 's/WBTransposon/WBT/'|sed 's/_CE_C/_C/'|awk -v OFS="\t" '{if($1~/_CE$/) {gsub("_CE$","",$1)};print $0}' > tmp && mv tmp T_kin_C_matrix_full_reduced.txt
 
@@ -302,7 +302,8 @@ if [$result eq '']
 	else echo "column names do not match, exiting..." && exit 1
 fi
 cat T_kin_C_matrix_full_reduced.txt > tmp && cat per_strain_NAs_removed.txt |sed 2d >>tmp && mv tmp T_kin_C_matrix_full_reduced.txt
-
+bash ${scripts_dir}/transpose_matrix.sh kin_matrix_full.txt T_kin_matrix_full.txt
+bash ${scripts_dir}/transpose_matrix.sh with_monomorphic_kin_matrix_full.txt T_with_monomorphic_kin_matrix_full.txt
 
 #assign id numbers to traits
 python ${scripts_dir}/${id}
@@ -336,6 +337,7 @@ cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/TE_se
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/homologs.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/paragraphs.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/grantham_scores.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/TD10.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/FINAL_RESULTS_LF.txt_IGNORE .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/OD/OD_FINAL_RESULTS_LF.txt .
 

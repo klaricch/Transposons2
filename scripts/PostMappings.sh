@@ -66,7 +66,40 @@ cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/piRNA/tables/table_piRNAs.t
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/piRNA/tables/summary_mismatches_BWA_strict.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/TE_seqs.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/gene_interrupt/essentiality_nonredundant_strain_info.txt .
-cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/data_for_figures/kin_matrix_full.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/T_kin_matrix_full.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/T_with_monomorphic_kin_matrix_full.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/T_kin_C_matrix_full_reduced.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/WB_pos_element_names.gff .
+
+
+echo -e "Chromosome\tChromosome Start\tChromosome End\tTransposable Element Name\txref\tOrientation" | cat - WB_pos_element_names.gff |cut -f1-4,6 > WB_pos_table.txt
+echo -e "piRNA Transcript\tTransposon\tNumber of Mismatches\tSupporting Alignment Method" | cat - table_piRNAs.txt > tmp && mv tmp table_piRNAs.txt
+cat T_kin_C_matrix_full_reduced.txt |sed 's/trait/Trait/' > tmp && mv tmp T_kin_C_matrix_full_reduced.txt
+cat T_with_monomorphic_kin_matrix_full.txt |sed 's/trait/Marker/' > tmp && mv tmp T_with_monomorphic_kin_matrix_full.txt
+cat T_kin_matrix_full.txt |sed 's/trait/Marker/' > tmp && mv tmp T_kin_matrix_full.txt
+sed -e 's/TE_start/Transposon Position/' -e 's/Transcript_Name/Transcript Name/' -e 's/Gene_Name/Gene Name/' -e 's/GO_Annotation/GO Annotation/' -e 's/No_Strains/Number of Strains/' -e 's/TE/Transposon/' essentiality_nonredundant_strain_info.txt | cut -f1-2,4-12 >tmp && mv tmp essentiality_nonredundant_strain_info.txt
+cat summary_mismatches_BWA_strict.txt|sed -e 's/Number Unique piRNAs Aligned/Number Unique piRNAs Aligned with BWA/' -e 's/Number Unique Transposons/Number Unique Transposons Aligned with BWA/' >tmp1
+cat summary_mismatches_BLAST_strict.txt|sed -e 's/Number Unique piRNAs BLASTED/Number Unique piRNAs Aligned with BLAST/' -e 's/Number Unique Transposons/Number Unique Transposons Aligned with BLAST/' > tmp2
+paste tmp1 tmp2 |cut -f1-3,5-6 >tmp3
+mv tmp3 BWA_and_BLAST_table.txt
+rm tmp1
+rm tmp2
+rm tmp3
+
+
+
+
+
+mkdir final_tables
+cp T_kin_C_matrix_full_reduced.txt final_tables/
+cp T_kin_matrix_full.txt final_tables final_tables/
+cp T_with_monomorphic_kin_matrix_full.txt final_tables/
+cp essentiality_nonredundant_strain_info.txt final_tables/
+cp TE_seqs.txt final_tables/
+cp summary_mismatches_BLAST_strict.txt final_tables/
+cp summary_mismatches_BWA_strict.txt final_tables/
+cp table_piRNAs.txt final_tables/
+cp WB_pos_table.txt final_tables/
 
 mkdir raw_strain_calls
 cd raw_strain_calls
