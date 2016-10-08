@@ -207,6 +207,7 @@ align(0,strict=True)
 align(1,strict=True)
 align(2,strict=True)
 align(3,strict=True)
+align(4,strict=True)
 
 OUT_SUMMARY.close()
 OUT_SUMMARY_STRICT.close()

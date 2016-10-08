@@ -52,6 +52,7 @@ search_aligned(0)
 search_aligned(1)
 search_aligned(2)
 search_aligned(3)
+search_aligned(4)
 
 cmd="cat intervalPIs_* > intervalPIs_all.txt"
 result, err = Popen([cmd],stdout=PIPE, stderr=PIPE, shell=True).communicate()

@@ -301,7 +301,7 @@ if [$result eq '']
 	then echo "matched"
 	else echo "column names do not match, exiting..." && exit 1
 fi
-cat T_kin_C_matrix_full_reduced.txt > tmp && cat per_strain_NAs_removed.txt |sed 2d >>tmp && mv tmp T_kin_C_matrix_full_reduced.txt
+cat T_kin_C_matrix_full_reduced.txt > tmp && cat per_strain_NAs_removed.txt |sed 1,2d >>tmp && mv tmp T_kin_C_matrix_full_reduced.txt
 bash ${scripts_dir}/transpose_matrix.sh kin_matrix_full.txt T_kin_matrix_full.txt
 bash ${scripts_dir}/transpose_matrix.sh with_monomorphic_kin_matrix_full.txt T_with_monomorphic_kin_matrix_full.txt
 
@@ -338,6 +338,7 @@ cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/homologs.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/paragraphs.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/grantham_scores.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/TD10.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/piRNA_gene_names.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/FINAL_RESULTS_LF.txt_IGNORE .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/OD/OD_FINAL_RESULTS_LF.txt .
 

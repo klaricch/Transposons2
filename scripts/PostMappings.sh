@@ -1,7 +1,7 @@
-#!/bin/bash
+  #!/bin/bash
 # this script analyzes GWAS results to investigate invlovement of genes of interest and piRNAs
 # USE: PostMappings.sh
-# NOTE: must first transfer "Peak_Table.txt" and "TOI.txt" to final_results directory
+# NOTE: must first transfer "Peak_Table.txt" and "TOI.txt" and "TajimaD_interest.bed" to final_results directory
 
 scripts_dir=/lscr2/andersenlab/kml436/git_repos2/Transposons2/scripts
 data_dir=/lscr2/andersenlab/kml436/git_repos2/Transposons2/data
@@ -56,6 +56,9 @@ cp bwa/summary_mismatches_BWA_strict.txt tables/
 cp blast/summary_mismatches_BLAST_strict.txt tables/
 
 
+# find genes within high TajD regions
+python ${scripts_dir}/taj_genes.py
+
 # move all tables
 cd /lscr2/andersenlab/kml436/git_repos2/Transposons2/
 mkdir tables
@@ -66,14 +69,18 @@ cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/piRNA/tables/table_piRNAs.t
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/piRNA/tables/summary_mismatches_BWA_strict.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/TE_seqs.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/gene_interrupt/essentiality_nonredundant_strain_info.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/gene_interrupt/essentiality_nonredundant_cds_lethal.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/T_kin_matrix_full.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/T_with_monomorphic_kin_matrix_full.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/T_kin_C_matrix_full_reduced.txt .
+cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/results/final_results/taj_genes.txt .
 cp /lscr2/andersenlab/kml436/git_repos2/Transposons2/files/WB_pos_element_names.gff .
 
 
 echo -e "Chromosome\tChromosome Start\tChromosome End\tTransposable Element Name\txref\tOrientation" | cat - WB_pos_element_names.gff |cut -f1-4,6 > WB_pos_table.txt
 echo -e "piRNA Transcript\tTransposon\tNumber of Mismatches\tSupporting Alignment Method" | cat - table_piRNAs.txt > tmp && mv tmp table_piRNAs.txt
+echo -e "Chromosome\tTransposon Position\tMethod\tTE\tRegion\tTranscript Name\tGene Name\tBiotype\tPhenotype\tGO Annotation\tNumber of Strains\tStrains" | cat - table_piRNAs.txt > tmp && mv tmp table_piRNAs.txt
+
 cat T_kin_C_matrix_full_reduced.txt |sed 's/trait/Trait/' > tmp && mv tmp T_kin_C_matrix_full_reduced.txt
 cat T_with_monomorphic_kin_matrix_full.txt |sed 's/trait/Marker/' > tmp && mv tmp T_with_monomorphic_kin_matrix_full.txt
 cat T_kin_matrix_full.txt |sed 's/trait/Marker/' > tmp && mv tmp T_kin_matrix_full.txt
@@ -84,7 +91,7 @@ paste tmp1 tmp2 |cut -f1-3,5-6 >tmp3
 mv tmp3 BWA_and_BLAST_table.txt
 rm tmp1
 rm tmp2
-rm tmp3
+
 
 
 
@@ -100,6 +107,9 @@ cp summary_mismatches_BLAST_strict.txt final_tables/
 cp summary_mismatches_BWA_strict.txt final_tables/
 cp table_piRNAs.txt final_tables/
 cp WB_pos_table.txt final_tables/
+cp BWA_and_BLAST_table.txt final_tables/
+cp taj_genes.txt final_tables/
+cp essentiality_nonredundant_cds_lethal.txt final_tables/
 
 mkdir raw_strain_calls
 cd raw_strain_calls

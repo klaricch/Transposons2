@@ -99,9 +99,10 @@ for i,values in totals.items():
 									#OUT_FAMILY_PRUNED.write("{i}\t{strainN}\t{count}\t{av}\t{sd}\t{strain_difference}\n".format(**locals()))
 						elif method == "absent":
 							if float(count)>float(av):
-								if TE_type == "dnatransposon" or TE_type =="unknown":
-									OUT_FAMILY_PRUNED.write("{i}\t{strainN}\t{count}\t{av}\t{sd}\t{strain_difference}\n".format(**locals()))
-
+								OUT_FAMILY_PRUNED.write("{i}\t{strainN}\t{count}\t{av}\t{sd}\t{strain_difference}\n".format(**locals()))
+						elif method == "cumulative":
+							if float(count)>float(av):
+								OUT_FAMILY_PRUNED.write("{i}\t{strainN}\t{count}\t{av}\t{sd}\t{strain_difference}\n".format(**locals()))
 
 			if process_tails=="TRUE":
 				if float(count) in slice_head:

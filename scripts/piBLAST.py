@@ -69,8 +69,8 @@ OUT.write("Number of Mismatches\tNumber Unique piRNAs BLASTED\tNumber Unique Tra
 
 BLAST_PAIRS=open("blast_pairs.txt", 'w')
 
-mis_per= {'zero': 100, 'one': 95.23,'two': 90.48, 'three': 85.71}
-num_ver= {'zero': 0, 'one': 1,'two': 2, 'three': 3}
+mis_per= {'zero': 100, 'one': 95.23,'two': 90.48, 'three': 85.71,'four':80.95}
+num_ver= {'zero': 0, 'one': 1,'two': 2, 'three': 3, 'four':0}
 def piblast(mismatch):
 	blasts={}
 	blasts=defaultdict(list)
@@ -109,6 +109,7 @@ piblast('zero')
 piblast('one')
 piblast('two')
 piblast('three')
+piblast('four')
 #for k,v in seen.items():
 #	print k
 #	print v
