@@ -58,6 +58,7 @@ search_blasted('one')
 search_blasted('two')
 search_blasted('three')
 search_blasted('four')
+search_blasted('five')
 
 ########################
 # TC3 control

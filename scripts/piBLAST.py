@@ -54,11 +54,11 @@ with open("piRNA_blast.txt".format(**locals()) ,'r') as IN:
 			TE=renames[TE]
 			items[1]=TE
 		new_line='\t'.join(items[0:])
-		if query_start==1 and first_digit>=8:
+		if query_start==1 : #and first_digit>=8
 			OUT.write(new_line + '\n')
 OUT.close()
 
-cmd="cat piRNA_blast_strict_redundant.txt |sort -k1,1 -k2,2 -k10,10 -k11,11r -k8,8 -k9,9 -k3,3r |uniq | awk '$11>20 {print $0}' > piRNA_blast_strict_21.txt"
+cmd="cat piRNA_blast_strict_redundant.txt |sort -k1,1 -k2,2 -k10,10 -k11,11r -k8,8 -k9,9 -k3,3r |uniq  > piRNA_blast_strict_21.txt" #| awk '$11>20 {print $0}'
 result, err = Popen([cmd],stdout=PIPE, stderr=PIPE, shell=True).communicate()
 
 
@@ -69,13 +69,14 @@ OUT.write("Number of Mismatches\tNumber Unique piRNAs BLASTED\tNumber Unique Tra
 
 BLAST_PAIRS=open("blast_pairs.txt", 'w')
 
-mis_per= {'zero': 100, 'one': 95.23,'two': 90.48, 'three': 85.71,'four':80.95}
-num_ver= {'zero': 0, 'one': 1,'two': 2, 'three': 3, 'four':4}
+mis_per= {'zero': 100, 'one': 95.23,'two': 90.48, 'three': 85.71,'four':80.95,'five':76.19}
+num_ver= {'zero': 0, 'one': 1,'two': 2, 'three': 3, 'four':4, 'five':5}
 def piblast(mismatch):
 	blasts={}
 	blasts=defaultdict(list)
 	with open("piRNA_blast_strict_21.txt", 'r') as IN:
 		for line in IN:
+			print line
 			line=line.rstrip('\n')
 			items=re.split('\t',line)
 			query,TE,perID=items[0:3]
@@ -83,11 +84,26 @@ def piblast(mismatch):
 			pi_transcript =match.group(1)
 			perID=items[2]
 			beat_per=mis_per[mismatch]
+
+
+			length_align=items[10]
+			info_align=items[11]
+			matches=re.split("\D+",info_align)
+			matches=[int(i) for i in matches]
+			matched_bases=sum(matches)
+			print matched_bases
+
+
+
 			num=num_ver[mismatch]
+			print num
 			family_short=re.sub("_CE$","",TE)
 			family_short=re.sub("WBTransposon","WBT",family_short)
 			pair=family_short + "_" + pi_transcript
-			if float(perID)>=beat_per: 
+			actual_mismatch=21-int(matched_bases)
+			print actual_mismatch
+			if actual_mismatch<=num:
+			#if float(perID)>=beat_per: 
 				if pair not in seen.keys():
 					blasts[family_short].append(pi_transcript)
 					BLAST_PAIRS.write("{pi_transcript}\t{family_short}\t{num}\n".format(**locals()))
@@ -110,6 +126,7 @@ piblast('one')
 piblast('two')
 piblast('three')
 piblast('four')
+piblast('five')
 #for k,v in seen.items():
 #	print k
 #	print v

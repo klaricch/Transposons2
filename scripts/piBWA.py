@@ -157,7 +157,7 @@ def align(mismatches,strict=False):
 
 	# enforce no mismatches in first 8 bps of the piRNA
 		if strict:
-			if (flag==0 or flag==256) and first_digit>=8:
+			if (flag==0 or flag==256): # and first_digit>=8
 				if pair not in seen.keys():
 					seen_pis_strict[query]=0
 					seen_TEs_strict[TE]=0
@@ -167,7 +167,7 @@ def align(mismatches,strict=False):
 					seen[pair]=0
 
 
-			elif (flag==16 or flag==272) and last_digit>=8:
+			elif (flag==16 or flag==272): # and last_digit>=8
 				if pair not in seen.keys():
 					seen_pis_strict[query]=0
 					seen_TEs_strict[TE]=0
@@ -208,6 +208,7 @@ align(1,strict=True)
 align(2,strict=True)
 align(3,strict=True)
 align(4,strict=True)
+align(5,strict=True)
 
 OUT_SUMMARY.close()
 OUT_SUMMARY_STRICT.close()
