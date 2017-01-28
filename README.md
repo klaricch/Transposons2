@@ -1,4 +1,3 @@
-Scripts for simulation and detection of Transposons
 # Transposon Detection in *C. elegans*
 Scripts for simulation and detection of Transposons
 
@@ -21,27 +20,27 @@ mkdir tables
 #### Run Transposon Detection Programs
 Run TEMP to detect insertion events relative to the reference and TE-Locate to detect absences or maintenance of transposons relative to the reference. In data directory:
 ```
-bash RunTransposonCaller.sh
+bash run_TransposonCaller.sh
 ```
 
 #### Process Transposon Caller Outputs
-*Filter out redundant calls
-*Apply read support and population frequency filters
-*Convert transposon names
-*Collapse transposons
-*Produce consistently formatted output files
+* Filter out redundant calls
+* Apply read support and population frequency filters
+* Convert transposon names
+* Collapse transposons
+* Produce consistently formatted output files
 ```
 bash run_ProcessTransposonCallerOutput.sh
 ```
 #### Define Traits and Classify
-*Check for and resolve contradictory calls
-*Merge transposons
-*Generate matrix of calls
-*Filter monomorphic sites
-*Account for sites with no coverage
-*Calculate trait metrics
-*Check transposon classification and prevalence
-*Find intersection with genes
+* Check for and resolve contradictory calls
+* Merge transposons
+* Generate matrix of calls
+* Filter monomorphic sites
+* Account for sites with no coverage
+* Calculate trait metrics
+* Check transposon classification and prevalence
+* Find intersection with genes
 ```
 bash CleanTransposons.sh
 ```
