@@ -8,6 +8,7 @@ import sys
 import os
 from subprocess import Popen, PIPE 
 from collections import defaultdict
+from collections import Counter
 import pickle
 import itertools
 
@@ -54,8 +55,8 @@ with open("piRNA_blast.txt".format(**locals()) ,'r') as IN:
 			TE=renames[TE]
 			items[1]=TE
 		new_line='\t'.join(items[0:])
-		if query_start==1 : #and first_digit>=8
-			OUT.write(new_line + '\n')
+		#if query_start==1 : #and first_digit>=8
+		OUT.write(new_line + '\n')
 OUT.close()
 
 cmd="cat piRNA_blast_strict_redundant.txt |sort -k1,1 -k2,2 -k10,10 -k11,11r -k8,8 -k9,9 -k3,3r |uniq  > piRNA_blast_strict_21.txt" #| awk '$11>20 {print $0}'
@@ -65,7 +66,7 @@ result, err = Popen([cmd],stdout=PIPE, stderr=PIPE, shell=True).communicate()
 seen={}
 
 OUT=open("summary_mismatches_BLAST_strict.txt", 'w')
-OUT.write("Number of Mismatches\tNumber Unique piRNAs BLASTED\tNumber Unique Transposons\n")
+OUT.write("Number of Mismatches\tNumber Unique piRNAs Aligned to One TE\tNumber Unique piRNAs Aligned to Multiple TEs\n")
 
 BLAST_PAIRS=open("blast_pairs.txt", 'w')
 
@@ -74,6 +75,9 @@ num_ver= {'zero': 0, 'one': 1,'two': 2, 'three': 3, 'four':4, 'five':5}
 def piblast(mismatch):
 	blasts={}
 	blasts=defaultdict(list)
+
+	pi_one=0
+	pi_multiple=0
 	with open("piRNA_blast_strict_21.txt", 'r') as IN:
 		for line in IN:
 			print line
@@ -114,7 +118,21 @@ def piblast(mismatch):
 	vals=list(itertools.chain(blasts.values()))
 	blasts_pis_strict =len(set(list(itertools.chain.from_iterable(vals))))
 
-	OUT.write("{mismatch}\t{blasts_pis_strict}\t{blasts_TEs_strict}\n".format(**locals()))
+	#ditct[TE].pi,pi,pi
+	blasts_pis_new=list(itertools.chain.from_iterable(vals))
+	pi_counts=Counter(blasts_pis_new)
+	print pi_counts
+
+
+	for k,v in pi_counts.items():
+		if v==1:
+			pi_one+=1
+		else:
+			pi_multiple+=1
+
+	#OUT.write("{mismatch}\t{blasts_pis_strict}\t{blasts_TEs_strict}\n".format(**locals()))
+	OUT.write("{mismatch}\t{pi_one}\t{pi_multiple}\n".format(**locals()))
+
 
 	with open("strict_blasts_{mismatch}.txt".format(**locals()), "wb") as fp: # Pickle
 		pickle.dump(blasts, fp) 
